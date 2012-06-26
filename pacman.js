@@ -340,7 +340,7 @@ Pacman.User = function (game, map) {
             return false;
         }
         return true;
-	};
+    };
 
     function getNewCoord(dir, current) {   
         return {
@@ -607,12 +607,12 @@ Pacman.Map = function (size) {
         }
         
         for (i = 0; i < height; i += 1) {
-		    for (j = 0; j < width; j += 1) {
+            for (j = 0; j < width; j += 1) {
                 if (map[i][j] === Pacman.PILL) {
                     ctx.beginPath();
 
                     ctx.fillStyle = "#000";
-		            ctx.fillRect((j * blockSize), (i * blockSize), 
+                    ctx.fillRect((j * blockSize), (i * blockSize), 
                                  blockSize, blockSize);
 
                     ctx.fillStyle = "#FFF";
@@ -624,8 +624,8 @@ Pacman.Map = function (size) {
                     ctx.fill();
                     ctx.closePath();
                 }
-		    }
-	    }
+            }
+        }
     };
     
     function draw(ctx) {
@@ -633,15 +633,15 @@ Pacman.Map = function (size) {
         var i, j, size = blockSize;
 
         ctx.fillStyle = "#000";
-	    ctx.fillRect(0, 0, width * size, height * size);
+        ctx.fillRect(0, 0, width * size, height * size);
 
         drawWall(ctx);
         
         for (i = 0; i < height; i += 1) {
-		    for (j = 0; j < width; j += 1) {
-			    drawBlock(i, j, ctx);
-		    }
-	    }
+            for (j = 0; j < width; j += 1) {
+                drawBlock(i, j, ctx);
+            }
+        }
     };
     
     function drawBlock(y, x, ctx) {
@@ -658,17 +658,17 @@ Pacman.Map = function (size) {
             layout === Pacman.BISCUIT) {
             
             ctx.fillStyle = "#000";
-		    ctx.fillRect((x * blockSize), (y * blockSize), 
+            ctx.fillRect((x * blockSize), (y * blockSize), 
                          blockSize, blockSize);
 
             if (layout === Pacman.BISCUIT) {
                 ctx.fillStyle = "#FFF";
-		        ctx.fillRect((x * blockSize) + (blockSize / 2.5), 
+                ctx.fillRect((x * blockSize) + (blockSize / 2.5), 
                              (y * blockSize) + (blockSize / 2.5), 
                              blockSize / 6, blockSize / 6);
-	        }
+            }
         }
-        ctx.closePath();	 
+        ctx.closePath();     
     };
 
     reset();
@@ -1027,6 +1027,38 @@ var PACMAN = (function () {
         }
     };
     
+    function touchStart(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        swipeBeginX = e.targetTouches[0].pageX;
+        swipeBeginY = e.targetTouches[0].pageY;
+    };
+    
+    function touchEnd(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        swipeEndX = e.targetTouches[0].pageX;
+        swipeEndY = e.targetTouches[0].pageY;
+        
+        if (Math.abs(swipeEndX - swipeBeginX) > Math.abs(swipeEndY - swipeBeginY)) {
+            //Horizontal swipe
+            if (swipeEndX > swipeBeginX) {
+                due = RIGHT;
+            } else {
+                due = LEFT;
+            }
+        } else {
+            //Vertical swipe
+            if (swipeEndY > swipeBeginY) {
+                due = UP;
+            } else {
+                due = DOWN;
+            }
+        }
+    };
+    
     function init(wrapper, root) {
         
         var i, len, ghost,
@@ -1084,8 +1116,10 @@ var PACMAN = (function () {
         dialog("Press N to Start");
         
         document.addEventListener("keydown", keyDown, true);
-        document.addEventListener("keypress", keyPress, true); 
-        
+        document.addEventListener("keypress", keyPress, true);
+        document.addEventListener("touchstart", touchStart, true);
+        document.addEventListener("touchend", touchEnd, true);
+  
         timer = window.setInterval(mainLoop, 1000 / Pacman.FPS);
     };
     
@@ -1099,22 +1133,22 @@ var PACMAN = (function () {
 var KEY = {'BACKSPACE': 8, 'TAB': 9, 'NUM_PAD_CLEAR': 12, 'ENTER': 13, 'SHIFT': 16, 'CTRL': 17, 'ALT': 18, 'PAUSE': 19, 'CAPS_LOCK': 20, 'ESCAPE': 27, 'SPACEBAR': 32, 'PAGE_UP': 33, 'PAGE_DOWN': 34, 'END': 35, 'HOME': 36, 'ARROW_LEFT': 37, 'ARROW_UP': 38, 'ARROW_RIGHT': 39, 'ARROW_DOWN': 40, 'PRINT_SCREEN': 44, 'INSERT': 45, 'DELETE': 46, 'SEMICOLON': 59, 'WINDOWS_LEFT': 91, 'WINDOWS_RIGHT': 92, 'SELECT': 93, 'NUM_PAD_ASTERISK': 106, 'NUM_PAD_PLUS_SIGN': 107, 'NUM_PAD_HYPHEN-MINUS': 109, 'NUM_PAD_FULL_STOP': 110, 'NUM_PAD_SOLIDUS': 111, 'NUM_LOCK': 144, 'SCROLL_LOCK': 145, 'SEMICOLON': 186, 'EQUALS_SIGN': 187, 'COMMA': 188, 'HYPHEN-MINUS': 189, 'FULL_STOP': 190, 'SOLIDUS': 191, 'GRAVE_ACCENT': 192, 'LEFT_SQUARE_BRACKET': 219, 'REVERSE_SOLIDUS': 220, 'RIGHT_SQUARE_BRACKET': 221, 'APOSTROPHE': 222};
 
 (function () {
-	/* 0 - 9 */
-	for (var i = 48; i <= 57; i++) {
+    /* 0 - 9 */
+    for (var i = 48; i <= 57; i++) {
         KEY['' + (i - 48)] = i;
-	}
-	/* A - Z */
-	for (i = 65; i <= 90; i++) {
+    }
+    /* A - Z */
+    for (i = 65; i <= 90; i++) {
         KEY['' + String.fromCharCode(i)] = i;
-	}
-	/* NUM_PAD_0 - NUM_PAD_9 */
-	for (i = 96; i <= 105; i++) {
+    }
+    /* NUM_PAD_0 - NUM_PAD_9 */
+    for (i = 96; i <= 105; i++) {
         KEY['NUM_PAD_' + (i - 96)] = i;
-	}
-	/* F1 - F12 */
-	for (i = 112; i <= 123; i++) {
+    }
+    /* F1 - F12 */
+    for (i = 112; i <= 123; i++) {
         KEY['F' + (i - 112 + 1)] = i;
-	}
+    }
 })();
 
 Pacman.WALL    = 0;
@@ -1125,27 +1159,27 @@ Pacman.PILL    = 4;
 
 Pacman.MAP = [
     [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-	[0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-	[0, 4, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 4, 0],
-	[0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
-	[0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-	[0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0],
-	[0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0],
-	[0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
-	[2, 2, 2, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 2, 2, 2],
-	[0, 0, 0, 0, 1, 0, 1, 0, 0, 3, 0, 0, 1, 0, 1, 0, 0, 0, 0],
-	[2, 2, 2, 2, 1, 1, 1, 0, 3, 3, 3, 0, 1, 1, 1, 2, 2, 2, 2],
-	[0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
-	[2, 2, 2, 0, 1, 0, 1, 1, 1, 2, 1, 1, 1, 0, 1, 0, 2, 2, 2],
-	[0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
-	[0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-	[0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
-	[0, 4, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 4, 0],
-	[0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0],
-	[0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0],
-	[0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0],
-	[0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
-	[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+    [0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+    [0, 4, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 4, 0],
+    [0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
+    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+    [0, 1, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 1, 0],
+    [0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0],
+    [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 0, 0],
+    [2, 2, 2, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 1, 0, 2, 2, 2],
+    [0, 0, 0, 0, 1, 0, 1, 0, 0, 3, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+    [2, 2, 2, 2, 1, 1, 1, 0, 3, 3, 3, 0, 1, 1, 1, 2, 2, 2, 2],
+    [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+    [2, 2, 2, 0, 1, 0, 1, 1, 1, 2, 1, 1, 1, 0, 1, 0, 2, 2, 2],
+    [0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0],
+    [0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+    [0, 1, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 0, 1, 0],
+    [0, 4, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 4, 0],
+    [0, 0, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 0, 1, 0, 0],
+    [0, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 0, 1, 1, 1, 1, 0],
+    [0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0],
+    [0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0],
+    [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 ];
 
 Pacman.WALLS = [
