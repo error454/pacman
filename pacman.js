@@ -341,6 +341,40 @@ Pacman.User = function (game, map) {
         }
         return true;
     };
+    
+    function touchStart(e) {        
+        swipeBeginX = e.touches[0].pageX;
+        swipeBeginY = e.touches[0].pageY;
+        
+        return true;
+    };
+    
+    function touchMove(e) {        
+        swipeEndX = e.touches[0].pageX;
+        swipeEndY = e.touches[0].pageY;
+        
+        return true;
+    }
+    
+    function touchEnd(e) {
+        if (Math.abs(swipeEndX - swipeBeginX) > Math.abs(swipeEndY - swipeBeginY)) {            
+            //Horizontal swipe
+            if (swipeEndX > swipeBeginX) {
+                due = RIGHT;
+            } else {
+                due = LEFT;
+            }
+        } else {
+            //Vertical swipe
+            if (swipeEndY > swipeBeginY) {
+                due = DOWN;
+            } else {
+                due = UP;
+            }
+        }
+        
+        return true;
+    };
 
     function getNewCoord(dir, current) {   
         return {
@@ -392,7 +426,7 @@ Pacman.User = function (game, map) {
             nextWhole   = null, 
             oldPosition = position,
             block       = null;
-        
+        //console.log("Moving: " + due + " direction: " + direction);
         if (due !== direction) {
             npos = getNewCoord(due, position);
             
@@ -525,7 +559,10 @@ Pacman.User = function (game, map) {
         "move"          : move,
         "newLevel"      : newLevel,
         "reset"         : reset,
-        "resetPosition" : resetPosition
+        "resetPosition" : resetPosition,
+        "touchStart"    : touchStart,
+        "touchMove"     : touchMove,
+        "touchEnd"      : touchEnd
     };
 };
 
@@ -687,7 +724,7 @@ Pacman.Map = function (size) {
         "blockSize"    : blockSize
     };
 };
-
+/*
 Pacman.Audio = function(game) {
     
     var files          = [], 
@@ -744,8 +781,8 @@ Pacman.Audio = function(game) {
         if (!game.soundDisabled()) {
             endEvents[name] = function() { ended(name); };
             playing.push(name);
-            files[name].addEventListener("ended", endEvents[name], true);
-            files[name].play();
+            //files[name].addEventListener("ended", endEvents[name], true);
+            //files[name].play();
         }
     };
 
@@ -769,6 +806,8 @@ Pacman.Audio = function(game) {
         "resume"       : resume
     };
 };
+*/
+
 
 var PACMAN = (function () {
 
@@ -788,6 +827,7 @@ var PACMAN = (function () {
         map          = null,
         user         = null,
         stored       = null;
+        gameStarted  = false;
 
     function getTick() { 
         return tick;
@@ -818,12 +858,13 @@ var PACMAN = (function () {
         for (var i = 0; i < ghosts.length; i += 1) { 
             ghosts[i].reset();
         }
-        audio.play("start");
+        //audio.play("start");
         timerStart = tick;
         setState(COUNTDOWN);
     }    
 
     function startNewGame() {
+        gameStarted = true;
         setState(WAITING);
         level = 1;
         user.reset();
@@ -848,7 +889,7 @@ var PACMAN = (function () {
             audio.pause();
             map.draw(ctx);
             dialog("Paused");
-        } else if (state !== PAUSE) {   
+        } else if (state !== PAUSE) {
             return user.keyDown(e);
         }
         return true;
@@ -859,6 +900,9 @@ var PACMAN = (function () {
         user.loseLife();
         if (user.getLives() > 0) {
             startLevel();
+        }
+        else{
+            gameStarted = false;
         }
     }
 
@@ -936,7 +980,7 @@ var PACMAN = (function () {
         for (i = 0, len = ghosts.length; i < len; i += 1) {
             if (collided(userPos, ghostPos[i]["new"])) {
                 if (ghosts[i].isVunerable()) { 
-                    audio.play("eatghost");
+                    //audio.play("eatghost");
                     ghosts[i].eat();
                     eatenCount += 1;
                     nScore = eatenCount * 50;
@@ -945,7 +989,7 @@ var PACMAN = (function () {
                     setState(EATEN_PAUSE);
                     timerStart = tick;
                 } else if (ghosts[i].isDangerous()) {
-                    audio.play("die");
+                    //audio.play("die");
                     setState(DYING);
                     timerStart = tick;
                 }
@@ -1004,7 +1048,7 @@ var PACMAN = (function () {
     }
 
     function eatenPill() {
-        audio.play("eatpill");
+        //audio.play("eatpill");
         timerStart = tick;
         eatenCount = 0;
         for (i = 0; i < ghosts.length; i += 1) {
@@ -1031,31 +1075,24 @@ var PACMAN = (function () {
         e.preventDefault();
         e.stopPropagation();
         
-        swipeBeginX = e.targetTouches[0].pageX;
-        swipeBeginY = e.targetTouches[0].pageY;
+        return user.touchStart(e);
     };
+    
+    function touchMove(e) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        return user.touchMove(e);
+    }
     
     function touchEnd(e) {
         e.preventDefault();
         e.stopPropagation();
         
-        swipeEndX = e.targetTouches[0].pageX;
-        swipeEndY = e.targetTouches[0].pageY;
-        
-        if (Math.abs(swipeEndX - swipeBeginX) > Math.abs(swipeEndY - swipeBeginY)) {
-            //Horizontal swipe
-            if (swipeEndX > swipeBeginX) {
-                due = RIGHT;
-            } else {
-                due = LEFT;
-            }
-        } else {
-            //Vertical swipe
-            if (swipeEndY > swipeBeginY) {
-                due = UP;
-            } else {
-                due = DOWN;
-            }
+        if(!gameStarted){
+            startNewGame();
+        } else{
+            return user.touchEnd(e);
         }
     };
     
@@ -1072,7 +1109,7 @@ var PACMAN = (function () {
 
         ctx  = canvas.getContext('2d');
 
-        audio = new Pacman.Audio({"soundDisabled":soundDisabled});
+        //audio = new Pacman.Audio({"soundDisabled":soundDisabled});
         map   = new Pacman.Map(blockSize);
         user  = new Pacman.User({ 
             "completedLevel" : completedLevel, 
@@ -1098,7 +1135,8 @@ var PACMAN = (function () {
             ["eating2", root + "audio/eating.short." + extension]
         ];
 
-        load(audio_files, function() { loaded(); });
+        loaded();
+        //load(audio_files, function() { loaded(); });
     };
 
     function load(arr, callback) { 
@@ -1118,6 +1156,7 @@ var PACMAN = (function () {
         document.addEventListener("keydown", keyDown, true);
         document.addEventListener("keypress", keyPress, true);
         document.addEventListener("touchstart", touchStart, true);
+        document.addEventListener("touchmove", touchMove, true);
         document.addEventListener("touchend", touchEnd, true);
   
         timer = window.setInterval(mainLoop, 1000 / Pacman.FPS);
